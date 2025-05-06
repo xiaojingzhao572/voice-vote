@@ -210,8 +210,8 @@
         function verifyStudent() {
             const studentId = document.getElementById('studentId').value.trim();
 
-            if (!/^\d{10}$/.test(studentId)) {
-                alert('请输入有效的10位学号');
+            if (!/^\d{9}$/.test(studentId)) {
+                alert('请输入有效的9位学号');
                 return;
             }
 
