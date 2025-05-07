@@ -154,6 +154,33 @@
     </div>
 
     <script>
+        // 合法学号白名单
+        const validStudentIds = new Set([
+            '225160101','225160102','225160103','225160104','225160105',
+            '225160106','225160107','225160108','225160109','225160110',
+            '225160111','225160112','225160113','225160114','225160115',
+            '225160116','225160117','225160118','225160119','225160120',
+            '225160121','225160122','225160123','225160124','225160126',
+            '225160127','225160128','225160129','225160131','225160133',
+            '225160134','225160135','225160136','225160137','225160138',
+            '225160139','225160201','225160202','225160203','225160204',
+            '225160205','225160206','225160207','225160208','225160209',
+            '225160210','225160211','225160212','225160213','225160214',
+            '225160215','225160216','225160217','225160219','225160220',
+            '225160221','225160222','225160223','225160224','225160225',
+            '225160226','225160227','225160228','225160229','225160231',
+            '225160232','225160233','225160234','225160235','225160236',
+            '225160237','225160238','225160239','225160301','225160302',
+            '225160303','225160304','225160305','225160306','225160307',
+            '225160308','225160309','225160310','225160311','225160312',
+            '225160313','225160314','225160315','225160316','225160317',
+            '225160318','225160319','225160320','225160321','225160322',
+            '225160323','225160324','225160325','225160326','225160327',
+            '225160328','225160329','225160330','225160331','225160332',
+            '225160333','225160334','225160335','225160336','225160337',
+            '225160338','225160339'
+        ]);
+
         // 图片服务配置
         const getImageUrl = (i) => `../imag-audio/${i+1}-1.png`;
 
@@ -195,7 +222,7 @@
                              onclick="showImage('${imgUrl}')">
                     </div>
                     <h3>作品 ${i + 1}</h3>
-                    <button onclick="vote(${i})" id="btn-${i}">投票</button>
+                    <button onclick="handleVoteClick(${i})" id="btn-${i}">投票</button>
                 `;
                 gallery.appendChild(workItem);
             }
@@ -210,8 +237,14 @@
         function verifyStudent() {
             const studentId = document.getElementById('studentId').value.trim();
 
+            // 验证流程
             if (!/^\d{9}$/.test(studentId)) {
                 alert('请输入有效的9位学号');
+                return;
+            }
+
+            if (!validStudentIds.has(studentId)) {
+                alert('学号不存在于投票名单中');
                 return;
             }
 
@@ -229,18 +262,28 @@
             setTimeout(() => chart.resize(), 100);
         }
 
-        function vote(workIndex) {
+        function handleVoteClick(workIndex) {
             if (votedStudents.has(currentStudentId)) {
                 alert('您已经投过票了，不能重复投票');
                 return;
             }
+            vote(workIndex);
+        }
 
+        function vote(workIndex) {
             votes[workIndex]++;
             votedStudents.add(currentStudentId);
             updateCount(workIndex);
             updateChart();
 
-            document.querySelectorAll('#gallery button').forEach(btn => btn.disabled = true);
+            // 禁用所有投票按钮
+            document.querySelectorAll('#gallery button').forEach(btn => {
+                btn.disabled = true;
+                btn.style.background = '#9E9E9E';
+                btn.onclick = () => alert('您已经投过票了，不能重复投票');
+            });
+
+            // 持久化存储
             localStorage.setItem('votes', JSON.stringify(votes));
             localStorage.setItem('votedStudents', JSON.stringify([...votedStudents]));
             alert(`成功为作品 ${workIndex + 1} 投票`);
@@ -277,7 +320,6 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    onResize: (chart) => chart.resize(),
                     scales: {
                         y: {
                             beginAtZero: true,
@@ -302,6 +344,7 @@
             initGallery();
         };
 
+        // 离开页面时保存数据
         window.addEventListener('beforeunload', () => {
             localStorage.setItem('votes', JSON.stringify(votes));
             localStorage.setItem('votedStudents', JSON.stringify([...votedStudents]));
